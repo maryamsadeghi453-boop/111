@@ -1,27 +1,21 @@
-FROM ubuntu:22.04
+FROM ubuntu:latest
 
-ENV DEBIAN_FRONTEND=noninteractive
-
+# نصب پیش‌نیازهای سیستم
 RUN apt-get update && apt-get install -y \
     curl \
     bash \
-    ca-certificates \
-    tzdata \
+    wget \
+    systemd \
     && rm -rf /var/lib/apt/lists/*
 
-# تنظیم تایم‌زون به تهران برای دقیق بودن زمان انقضای کاربران
-ENV TZ=Asia/Tehran
+# دانلود و نصب اسکریپت پنل پاسارگاد (Sanaei)
+RUN bash -c "$(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)"
 
-# ایجاد پوشه اصلی پنل
-WORKDIR /app
+# کپی کردن اسکریپت استارت
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# دانلود مستقیم آخرین نسخه پنل پاسارگاد از گیت‌هاب رسمی
-RUN bash -c "$(curl -L https://raw.githubusercontent.com/mmo93/PasarGuard/main/install.sh)" @ install
+# باز کردن پورت پیش‌فرض پنل
+EXPOSE 2053
 
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-# پورت پیش‌فرض ادمین پنل
-EXPOSE 8080
-
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["/start.sh"]
